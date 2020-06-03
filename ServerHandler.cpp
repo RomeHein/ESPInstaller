@@ -7,7 +7,7 @@
 //unmark following line to enable debug mode
 #define __debug
 
-const String repoPath = "https://raw.githubusercontent.com/RomeHein/ESPInstaller/list.json";
+const char* repoPath = "https://raw.githubusercontent.com/RomeHein/ESPInstaller/master/list.json";
 
 void ServerHandler::begin()
 {
@@ -41,18 +41,20 @@ void ServerHandler::handleRepoList()
 {
     HTTPClient http;
     #ifdef __debug
-        Serial.printf("[SERVER] Retrieving repo list from %s\n",repoPath.c_str());
+        Serial.printf("[SERVER] Retrieving repo list from %s\n",repoPath);
     #endif
-    http.begin(client,repoPath.c_str());
+    http.begin(client,repoPath);
     int httpResponseCode = http.GET();
     if (httpResponseCode>0) {
+        String resp = http.getString();
         #ifdef __debug
-        Serial.println("[SERVER] repo list retrieved");
+            Serial.printf("[SERVER] repo list retrieved: %s\n",resp.c_str());
         #endif
-        server.send(200, "text/json", http.getString());
+        server.send(200, "text/plain", resp.c_str());
     }
     else {
-        Serial.printf("[SERVER] Could not get repo list: %s\n", http.errorToString(httpResponseCode).c_str());
+        Serial.printf("[SERVER] Could not get repo list. Error %d: %s\n",httpResponseCode, http.errorToString(httpResponseCode).c_str());
+        server.send(503, "text/plain", "Could not get repo list");
     }
     http.end();
 }

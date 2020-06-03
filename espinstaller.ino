@@ -5,10 +5,12 @@
 //unmark following line to enable debug mode
 #define __debug
 
-const char* ssid       = "YOUR_SSID";
-const char* password   = "YOUR_PASS";
-
+const char* ssid       = "RPiHotspotN";
+const char* password   = "jdtswke3m@W";
+const char* dns = "esp-installer";
 ServerHandler *serverhandler;
+
+bool tried = false;
 
 void setup(void) {
   Serial.begin(115200);
@@ -26,22 +28,26 @@ void setup(void) {
     Serial.println(F("[SETUP] CONNECTED"));
   #endif
 
-  if (MDNS.begin("esp-installer")) {
+  if (MDNS.begin(dns)) {
     #ifdef __debug
-      Serial.println("[SETUP] MDNS responder started");
+      Serial.printf("[SETUP] Web interface available on: %s or ",dns);
     #endif
   }
+  Serial.println(WiFi.localIP());
 
   // Set server handler.
   serverhandler = new ServerHandler();
   serverhandler->begin();
 
-  Serial.println(WiFi.localIP());
 }
 
 void loop(void) {
   if ( WiFi.status() ==  WL_CONNECTED ) {
     serverhandler->server.handleClient();
+    if (!tried) {
+      tried = true;
+      serverhandler->handleRepoList();
+    }
   } else {
     // wifi down, try reconnecting, otherwise restart ESP
     WiFi.begin();

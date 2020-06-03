@@ -46,7 +46,7 @@ Two steps:
 {
     "name": "YourProjectName",
     "description": "A short description",
-    "repoRawVersionList": "https://raw.githubusercontent.com/User/YourProjectName/versions/list.json"
+    "repoRawVersionList": "https://raw.githubusercontent.com/YourUserName/YourProjectName/YourBranch/versions/list.json"
 }
 ```
 Once done simply make a pull request to this project.
@@ -93,3 +93,4 @@ In the above exemple, your `list.json` will need to have the following format:
 ## TO DO
 - [ ] Support FFat update
 - [ ] Provide code to add to your project so that user can easily install another project (or come back to ESPInstaller)
+- [ ] Add Partition scheme check?

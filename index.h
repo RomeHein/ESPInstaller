@@ -40,6 +40,22 @@ const char MAIN_page[] PROGMEM = R"=====(
         display: flex;
         flex-direction: column;
     }
+    .general-info {
+        max-height: 100px;
+        width: 67%;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+    .general-info > .repo-name {
+        text-align: left;
+        font-size: larger;
+        margin-bottom: 5px;
+    }
+    .general-info > .repo-description {
+        font-size: smaller;
+        text-align: left;
+    }
     .setting-container {
         display: flex;
         flex-direction: column;
@@ -57,14 +73,6 @@ const char MAIN_page[] PROGMEM = R"=====(
         width: calc(35% - 10px);
         margin: 5px 0 5px;
         text-align: left;
-    }
-    .setting-container input[type='text'], input[type='checkbox'] {
-        width: 65%;
-        margin: 5px 0 5px;
-        height: 30px;
-        border: none;
-        border-radius: 5px;
-        padding-left: 9px;
     }
     #file-update-label {
         background-color: white;
@@ -191,16 +199,6 @@ const char MAIN_page[] PROGMEM = R"=====(
     .btn:hover {
         background-color: white;
     }
-    .input-mode {
-        pointer-events: none;
-        background-color: white;
-    }
-    .input-mode.on {
-        color: yellowgreen;
-    }
-    .input-mode.off {
-        color: tomato;
-    }
     #blocker {
         display: flex;
         flex-direction: column;
@@ -282,15 +280,28 @@ const char MAIN_page[] PROGMEM = R"=====(
     <div class="lds-ring" id='page-loader'><div></div><div></div><div></div><div></div></div>
     <div class='container' id="gpio-container">
         <div id='remote-header-bar' class="header-container">
-            <h2>Install Project from Github repositories</h2>
+            <h2>Install from repositories</h2>
         </div>
         <div id='remote' class='column'></div>
     </div>
     <div class="container" id="automation-container">
         <div id='local-header-bar' class="header-container">
-            <h2>Install project from local directory</h2>
+            <h2>Install from local directory</h2>
         </div>
-        <div id='local' class='column'></div>
+        <div id='local' class='column'>
+            <div class='set'>
+                <div class='set-inputs'>
+                    <div class='row'>
+                        <div>From file:</div>
+                        <label for='firmware-file' id='file-update-label'>Choose file</label>
+                        <input type='file' name='update' id='firmware-file' onchange='fillUpdateInput(this)' style=display:none>
+                    </div>
+                </div>
+                <div class='btn-container'>
+                    <a id='submit-update-file' onclick='submitUpdate()' class='btn save disable'>Update</a>
+                </div>
+            </div>
+        </div>
     </div>
     <div id='blocker' class='hidden'>
         <h2 id='blocker-title'>Loading</h2>
@@ -318,16 +329,16 @@ const char MAIN_page[] PROGMEM = R"=====(
     const createRepoRow = (repo,index) => {
         let child = document.createElement('div');
         child.innerHTML = `<div class='row' id='rowRepo-${index}'>
-            <div class='info'>
-                <div>
+            <div class='general-info'>
+                <div class='repo-name'>
                     ${repo.name}
                 </div>
-                <div>
+                <div class='repo-description'>
                     ${repo.description}
                 </div>
             </div>
             <div class='btn-container'>
-                <a onclick='fetchRepoInfo(this)' id='getRepoInfo-${index}' class='btn edit'>More info</a>
+                <a onclick='fetchRepoInfo(this)' id='getRepoInfo-${index}' class='btn edit'>Check versions</a>
             </div>
         </div>`;
         return child.firstChild;
