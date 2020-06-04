@@ -2,11 +2,11 @@
     {
         "name": "ESPecial",
         "description": "This project aim to provide an easy way to control your esp32. You no longer need programming skills to set complex tasks. This can be a very nice approach for small projects, home automation and/or educational purposes.",
-        "repoRawVersionList": "https://raw.githubusercontent.com/RomeHein/ESPecial/v0.2/versions/list.json"
+        "repoRawPath": "https://raw.githubusercontent.com/RomeHein/ESPecial/v0.2/versions/"
     },
     {
         "name": "ESPInstaller",
         "description": "A simple webserver to allow easy installation of other project directly from their repo",
-        "repoRawVersionList": "https://raw.githubusercontent.com/RomeHein/ESPInstaller/master/versions/list.json"
+        "repoRawPath": "https://raw.githubusercontent.com/RomeHein/ESPInstaller/master/versions/"
     }
 ]

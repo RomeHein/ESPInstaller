@@ -364,7 +364,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         let child = document.createElement('div');
         child.innerHTML = `<div class='row more-info' id='rowRepoInfo-${index}'>
             <div class='repo-info'>
-                <select name='versions'>${options}</select>
+                <select id='version-${index}' name='versions'>${options}</select>
             </div>
             <div class='btn-container'>
                 <a onclick='install(this)' id='getRepoInfo-${index}' class='btn save'>Install</a>
@@ -399,11 +399,32 @@ const char MAIN_page[] PROGMEM = R"=====(
             });
             const repoMoreInfo = await res.json();
             const repoRow = document.getElementById(`rowRepo-${repoIndex}`);
-            repoRow.appendChild(createRepoMoreInfo(repoMoreInfo,repoIndex));
+            if (repoRow.childElementCount>2) {
+                repoRow.replaceChild(repoRow.lastElementChild,createRepoMoreInfo(repoMoreInfo,repoIndex));
+            } else {
+                repoRow.appendChild(createRepoMoreInfo(repoMoreInfo,repoIndex));
+            }
         } catch (err) {
             console.error(`Error: ${err}`);
         }
     }
+
+    const install = async (element) => {
+        const repoIndex = element.id.split('-')[1];
+        const repo = repos[repoIndex];
+        const selectedVersion = document.getElementById(`version-${repoIndex}`).value;
+        var data = new FormData();
+        data.append( "binPath", repo.repoRawVersionList + `${selectedVersion}/espintall.ino.bin` );
+        data.append( "spiffsPath", repo.repoRawVersionList + `${selectedVersion}/spiffs.bin` );
+        try {
+            const res = await fetch(window.location.href + 'repo/install', {
+                method: 'POST',
+                body:data
+            });
+        } catch (err) {
+            console.error(`Error: ${err}`);
+        }
+    } 
 
     // Events
     window.onload = async () => {

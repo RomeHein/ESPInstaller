@@ -50,8 +50,9 @@ Two steps:
 {
     "name": "YourProjectName",
     "description": "A short description",
-    "repoRawVersionList": "https://raw.githubusercontent.com/YourUserName/YourProjectName/YourBranch/versions/list.json"
+    "repoRawPath": "https://raw.githubusercontent.com/YourUserName/YourProjectName/YourBranch/versions/"
 }
+The `repoRawPath` should provide the directory where the `list.json` and all versions are provided. See next point.
 ```
 Once done simply make a pull request to this project.
 - You'll need to add a new folder to your project, containing all your project versions:
@@ -60,13 +61,15 @@ yourAwesomeProject
     |_versions
         |_list.json
         |_0.9
-            |_yourAwesomeProject.bin
+            |_espinstall.ino.bin
         |_1.0.1
-            |_yourAwesomeProject.bin
+            |_espinstall.ino.bin
         |_1.1
-            |_yourAwesomeProject.bin
+            |_espinstall.ino.bin
             |_spiffs.bin
 ```
+
+Note that your .bin name has to be `espinstall.ino.bin`. This is important to avoid any spelling issue.
 It's up to you whereas you want to provide multiple version of your project. All you have to do it having a `list.json` that matches your versions folder.
 In the above exemple, your `list.json` will need to have the following format:
 ```

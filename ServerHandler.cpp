@@ -16,6 +16,7 @@ void ServerHandler::begin()
     #endif
     server.onNotFound([this]() {handleNotFound(); });
     server.on("/",HTTP_GET, [this]() { handleRoot();});
+    server.on("/repo/install",HTTP_POST, [this]() { installFromRepo();});
     server.on("/repo/info",HTTP_POST, [this]() { handleRepoInformation();});
     server.on("/repo/list",HTTP_GET, [this]() { handleRepoList();});
     server.on("/update",HTTP_POST,[this]() { handleUpload(); }, [this]() { install(); });
@@ -63,10 +64,11 @@ void ServerHandler::handleRepoInformation()
 {
     if (server.hasArg("repo")) {
         HTTPClient http;
+        String versionListPath = server.arg("repo") + "list.json";
         #ifdef __debug
-            Serial.printf("[SERVER] Retrieving repo information from %s\n",server.arg("repo").c_str());
+            Serial.printf("[SERVER] Retrieving repo information from %s\n",versionListPath.c_str());
         #endif
-        http.begin(client,server.arg("repo").c_str());
+        http.begin(client,versionListPath.c_str());
         int httpResponseCode = http.GET();
         if (httpResponseCode>0) {
             const char* resp = http.getString().c_str();
@@ -129,12 +131,10 @@ void ServerHandler::installFromRepo() {
         switch (spiffRet) {
             case HTTP_UPDATE_FAILED:
             Serial.printf("[OTA] Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-            
             return;
 
             case HTTP_UPDATE_NO_UPDATES:
             Serial.println("[OTA] no updates");
-            
             return;
 
             case HTTP_UPDATE_OK:
@@ -156,18 +156,19 @@ void ServerHandler::installFromRepo() {
         switch (binRet) {
             case HTTP_UPDATE_FAILED:
             Serial.printf("[OTA] Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-            
+            server.send(503, "text/plain", "Failed to update");
             break;
 
             case HTTP_UPDATE_NO_UPDATES:
             Serial.println("[OTA] no updates");
-            
+            server.send(503, "text/plain", "No update found");
             break;
 
             case HTTP_UPDATE_OK:
             #ifdef __debug
                 Serial.println("[OTA] BIN updated");
             #endif
+            server.send(200, "text/plain", "Update completed");
             ESP.restart();
             break;
         }
