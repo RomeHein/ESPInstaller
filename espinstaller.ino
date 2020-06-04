@@ -5,12 +5,11 @@
 //unmark following line to enable debug mode
 #define __debug
 
-const char* ssid       = "RPiHotspotN";
-const char* password   = "jdtswke3m@W";
+const char* ssid       = "YourWifiName";
+const char* password   = "YourWifiPassword";
 const char* dns = "esp-installer";
-ServerHandler *serverhandler;
 
-bool tried = false;
+ServerHandler *serverhandler;
 
 void setup(void) {
   Serial.begin(115200);
@@ -44,10 +43,6 @@ void setup(void) {
 void loop(void) {
   if ( WiFi.status() ==  WL_CONNECTED ) {
     serverhandler->server.handleClient();
-    if (!tried) {
-      tried = true;
-      serverhandler->handleRepoList();
-    }
   } else {
     // wifi down, try reconnecting, otherwise restart ESP
     WiFi.begin();

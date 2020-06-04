@@ -2,7 +2,7 @@
 #include <HTTPClient.h>
 #include <Update.h>
 #include <HTTPUpdate.h>
-# include "index.h"
+#include "index.h"
 
 //unmark following line to enable debug mode
 #define __debug
@@ -46,11 +46,11 @@ void ServerHandler::handleRepoList()
     http.begin(client,repoPath);
     int httpResponseCode = http.GET();
     if (httpResponseCode>0) {
-        String resp = http.getString();
+        const char* resp = http.getString().c_str();
         #ifdef __debug
-            Serial.printf("[SERVER] repo list retrieved: %s\n",resp.c_str());
+            Serial.printf("[SERVER] repo list retrieved: %s\n",resp);
         #endif
-        server.send(200, "text/plain", resp.c_str());
+        server.send(200, "text/plain", resp);
     }
     else {
         Serial.printf("[SERVER] Could not get repo list. Error %d: %s\n",httpResponseCode, http.errorToString(httpResponseCode).c_str());
@@ -62,21 +62,22 @@ void ServerHandler::handleRepoList()
 void ServerHandler::handleRepoInformation()
 {
     if (server.hasArg("repo")) {
-        const char* repoPath = server.arg("repo").c_str();
         HTTPClient http;
         #ifdef __debug
-            Serial.printf("[SERVER] Retrieving repo information from %s\n",repoPath);
+            Serial.printf("[SERVER] Retrieving repo information from %s\n",server.arg("repo").c_str());
         #endif
-        http.begin(client,repoPath);
+        http.begin(client,server.arg("repo").c_str());
         int httpResponseCode = http.GET();
         if (httpResponseCode>0) {
+            const char* resp = http.getString().c_str();
             #ifdef __debug
-            Serial.println("[SERVER] repo info retrieved");
+                Serial.printf("[SERVER] repo info retrieved: %s\n",resp);
             #endif
-            server.send(200, "text/json", http.getString());
+            server.send(200, "text/plain", resp);
         }
         else {
             Serial.printf("[SERVER] Could not get repo information: %s\n", http.errorToString(httpResponseCode).c_str());
+            server.send(503, "text/plain", "Could not get repo list");
         }
         http.end();
         return;

@@ -4,6 +4,36 @@ const char MAIN_page[] PROGMEM = R"=====(
 <html>
 <!-- HTML_STYLE -->
 <style>
+    #remote {
+        max-height: 300px;
+        overflow: scroll;
+        background-color: whitesmoke;
+    }
+    #file-update-label {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: white;
+        border-radius: 5px;
+        padding: 5px;
+        height: 30px;
+        width: 70%;
+    }
+    #blocker {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        position: fixed;
+        height: 100%;
+        width: 100%;
+        background: lightgray;
+        opacity: 0.95;
+        color: white;
+    }
     body {
         text-align: center;
         font-family: helvetica;
@@ -56,6 +86,13 @@ const char MAIN_page[] PROGMEM = R"=====(
         font-size: smaller;
         text-align: left;
     }
+    .more-info {
+        background-color: lightgray !important;
+        width: 100%;
+    }
+    .more-info .repo-info {
+        width: 80%;
+    }
     .setting-container {
         display: flex;
         flex-direction: column;
@@ -74,20 +111,15 @@ const char MAIN_page[] PROGMEM = R"=====(
         margin: 5px 0 5px;
         text-align: left;
     }
-    #file-update-label {
-        background-color: white;
-        border-radius: 5px;
-        padding: 5px;
-        height: 30px;
-        margin: auto;
-        width: 70%;
-    }
     .row {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
+        background-color: white;
+        margin: 5px;
+        border-radius: 5px;
     }
     .hidden {
         display: none !important;
@@ -108,8 +140,7 @@ const char MAIN_page[] PROGMEM = R"=====(
     .set {
         display: flex;
         flex-direction: column;
-        width: 100%;
-        background-color: lightgray;
+        background-color: whitesmoke;
         padding: 10px;
     }
     .set>.set-inputs {
@@ -157,7 +188,7 @@ const char MAIN_page[] PROGMEM = R"=====(
     }
     .btn {
         border-radius: 5px;
-        padding: 15px 32px;
+        padding: 15px 10px;
         text-align: center;
         transition-duration: 0.4s;
         margin: 10px 5px;
@@ -193,26 +224,17 @@ const char MAIN_page[] PROGMEM = R"=====(
         border: solid 1px lightgray;
         color: white;
     }
+    .ok {
+        background-color: green;
+    }
+    .error {
+        background-color: red;
+    }
     .cancel:hover {
         color: lightgray;
     }
     .btn:hover {
         background-color: white;
-    }
-    #blocker {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        top: 0;
-        left: 0;
-        z-index: 1;
-        position: fixed;
-        height: 100%;
-        width: 100%;
-        background: lightgray;
-        opacity: 0.95;
-        color: white;
     }
     .spinner {
         height: 30px;
@@ -264,12 +286,6 @@ const char MAIN_page[] PROGMEM = R"=====(
             border-radius: 0px;
         }
     }
-    .ok {
-        background-color: green;
-    }
-    .error {
-        background-color: red;
-    }
 </style>
 <!-- HTML_DOM -->
 <body>
@@ -292,13 +308,10 @@ const char MAIN_page[] PROGMEM = R"=====(
             <div class='set'>
                 <div class='set-inputs'>
                     <div class='row'>
-                        <div>From file:</div>
                         <label for='firmware-file' id='file-update-label'>Choose file</label>
                         <input type='file' name='update' id='firmware-file' onchange='fillUpdateInput(this)' style=display:none>
+                        <a id='submit-update-file' onclick='submitUpdate()' class='btn save disable'>Update</a>
                     </div>
-                </div>
-                <div class='btn-container'>
-                    <a id='submit-update-file' onclick='submitUpdate()' class='btn save disable'>Update</a>
                 </div>
             </div>
         </div>
@@ -344,6 +357,22 @@ const char MAIN_page[] PROGMEM = R"=====(
         return child.firstChild;
     }
 
+    const createRepoMoreInfo = (moreInfo,index) => {
+        const options = moreInfo.reduce((prev,info) => {
+            return prev + `<option value='${info.version}'>${info.version}${info.current?' (last)':''}</option>`
+        },'');
+        let child = document.createElement('div');
+        child.innerHTML = `<div class='row more-info' id='rowRepoInfo-${index}'>
+            <div class='repo-info'>
+                <select name='versions'>${options}</select>
+            </div>
+            <div class='btn-container'>
+                <a onclick='install(this)' id='getRepoInfo-${index}' class='btn save'>Install</a>
+            </div>
+        </div>`;
+        return child.firstChild;
+    }
+
     // Fetch all project repo available
     const fetchRepoList = async () => {
         try {
@@ -359,19 +388,18 @@ const char MAIN_page[] PROGMEM = R"=====(
     }
 
     const fetchRepoInfo = async (element) => {
+        const repoIndex = element.id.split('-')[1];
+        const repo = repos[repoIndex];
+        var data = new FormData();
+        data.append( "repo", repo.repoRawVersionList );
         try {
-            const repoIndex = element.id.split('-')[1];
-            const repo = repos[repoIndex];
             const res = await fetch(window.location.href + 'repo/info', {
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({repo: repo.repoRawVersionList})
+                method: 'POST',
+                body:data
             });
-            repoMoreInfor = await res.json();
-            
+            const repoMoreInfo = await res.json();
+            const repoRow = document.getElementById(`rowRepo-${repoIndex}`);
+            repoRow.appendChild(createRepoMoreInfo(repoMoreInfo,repoIndex));
         } catch (err) {
             console.error(`Error: ${err}`);
         }
