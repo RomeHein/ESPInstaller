@@ -16,7 +16,7 @@ void ServerHandler::begin()
     #endif
     server.onNotFound([this]() {handleNotFound(); });
     server.on("/",HTTP_GET, [this]() { handleRoot();});
-    server.on("/repo/install",HTTP_POST, [this]() { installFromRepo();});
+    server.on("/repo/install",HTTP_POST,[this]() { installFromRepo();});
     server.on("/repo/info",HTTP_POST, [this]() { handleRepoInformation();});
     server.on("/repo/list",HTTP_GET, [this]() { handleRepoList();});
     server.on("/update",HTTP_POST,[this]() { handleUpload(); }, [this]() { install(); });

@@ -391,7 +391,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         const repoIndex = element.id.split('-')[1];
         const repo = repos[repoIndex];
         var data = new FormData();
-        data.append( "repo", repo.repoRawVersionList );
+        data.append( "repo", repo.repoRawPath );
         try {
             const res = await fetch(window.location.href + 'repo/info', {
                 method: 'POST',
@@ -414,8 +414,8 @@ const char MAIN_page[] PROGMEM = R"=====(
         const repo = repos[repoIndex];
         const selectedVersion = document.getElementById(`version-${repoIndex}`).value;
         var data = new FormData();
-        data.append( "binPath", repo.repoRawVersionList + `${selectedVersion}/espintall.ino.bin` );
-        data.append( "spiffsPath", repo.repoRawVersionList + `${selectedVersion}/spiffs.bin` );
+        data.append( "binPath", repo.repoRawPath + `${selectedVersion}/espinstall.ino.bin` );
+        data.append( "spiffsPath", repo.repoRawPath + `${selectedVersion}/spiffs.bin` );
         try {
             const res = await fetch(window.location.href + 'repo/install', {
                 method: 'POST',
