@@ -11,6 +11,10 @@ It simply provides a webinterface from where you can download and install projec
 - OTA from listed Repo
 - Local OTA (from local directory)
 
+<p align="center">
+    <img src="images/espinstaller.png" width="400">
+</p>
+
 ## Getting started
 
 ### Prerequisites
@@ -94,3 +98,4 @@ In the above exemple, your `list.json` will need to have the following format:
 - [ ] Support FFat update
 - [ ] Provide code to add to your project so that user can easily install another project (or come back to ESPInstaller)
 - [ ] Add Partition scheme check?
+- [ ] Add filter to search through repo list
