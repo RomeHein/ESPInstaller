@@ -8,8 +8,8 @@
 //unmark following line to enable debug mode
 #define __debug
 
-const char* ssid       = "Aziz_wifi";
-const char* password   = "@votoast2000";
+const char* ssid       = "YOUR_SSID";
+const char* password   = "YOUR_PASS";
 const char* dns = "esp-installer";
 
 ServerHandler *serverhandler;
