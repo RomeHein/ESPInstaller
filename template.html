@@ -36,7 +36,7 @@
     body {
         text-align: center;
         font-family: helvetica;
-        background-color: lightskyblue;
+        background-color: steelblue;
         margin: 0;
     }
     form {
@@ -119,6 +119,9 @@
         background-color: white;
         margin: 5px;
         border-radius: 5px;
+    }
+    .set-inputs .row {
+        background-color: initial;
     }
     .hidden {
         display: none !important;
@@ -301,6 +304,26 @@
     </div>
     <div class="container" id="automation-container">
         <div id='local-header-bar' class="header-container">
+            <h2>Install from custom URL</h2>
+        </div>
+        <div id='local' class='column'>
+            <div class='set'>
+                <div class='set-inputs'>
+                    <div class='row'>
+                        <label for='spiff-path'>Spiff file URL:</label>
+                        <input type='text' name='spiff' id='spiff-path-input'>
+                    </div>
+                    <div class='row'>
+                        <label for='bin-path'>Bin file URL</label>
+                        <input type='text' name='bin' id='bin-path-input'>
+                    </div>
+                    <a id='submit-update-file' onclick='installCustomPaths()' class='btn save disable'>Update</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container" id="automation-container">
+        <div id='local-header-bar' class="header-container">
             <h2>Install from local directory</h2>
         </div>
         <div id='local' class='column'>
@@ -375,34 +398,60 @@
     // Fetch all project repo available
     const fetchRepoList = async () => {
         try {
-            const res = await fetch(window.location.href + 'repo/list');
-            repos = await res.json();
-            const container = document.getElementById('remote');
-            repos.forEach((repo,index) => {
-                container.appendChild(createRepoRow(repo,index));
-            });
+            await fetch(window.location.href + 'repo/list/request');
+            // Avoid connection_reset from backend
+            await delay(2000);
+            let listRetrieved = false;
+            while(!listRetrieved) {
+                let resp = await fetch(window.location.href + 'repo/list');
+                let contentType = resp.headers.get("content-type");
+                if(contentType && contentType.indexOf("text/json") !== -1) {
+                    repos = await resp.json();
+                    const container = document.getElementById('remote');
+                    repos.forEach((repo,index) => {
+                        container.appendChild(createRepoRow(repo,index));
+                    });
+                    listRetrieved = true;
+                } else {
+                    await delay(1000);
+                }
+            }
         } catch (err) {
             console.error(`Error: ${err}`);
         }
     }
 
     const fetchRepoInfo = async (element) => {
+        document.getElementById('page-loader').classList.remove('hidden');
         const repoIndex = element.id.split('-')[1];
         const repo = repos[repoIndex];
         var data = new FormData();
         data.append( "repo", repo.repoRawPath );
         try {
-            const res = await fetch(window.location.href + 'repo/info', {
+            await fetch(window.location.href + 'repo/info/request', {
                 method: 'POST',
                 body:data
             });
-            const repoMoreInfo = await res.json();
-            const repoRow = document.getElementById(`rowRepo-${repoIndex}`);
-            if (repoRow.childElementCount>2) {
-                repoRow.replaceChild(repoRow.lastElementChild,createRepoMoreInfo(repoMoreInfo,repoIndex));
-            } else {
-                repoRow.appendChild(createRepoMoreInfo(repoMoreInfo,repoIndex));
+            // Avoid connection_reset from backend
+            await delay(2000);
+            let informationRetrieved = false;
+            while(!informationRetrieved) {
+                let resp = await fetch(window.location.href + 'repo/info');
+                let contentType = resp.headers.get("content-type");
+                if(contentType && contentType.indexOf("text/json") !== -1) {
+                    const repoMoreInfo = await resp.json();
+                    const repoRow = document.getElementById(`rowRepo-${repoIndex}`);
+                    if (repoRow.childElementCount>2) {
+                        repoRow.replaceChild(repoRow.lastElementChild,createRepoMoreInfo(repoMoreInfo,repoIndex));
+                    } else {
+                        repoRow.appendChild(createRepoMoreInfo(repoMoreInfo,repoIndex));
+                    }
+                    informationRetrieved = true;
+                } else {
+                    await delay(1000);
+                }
             }
+            document.getElementById('page-loader').classList.add('hidden');
         } catch (err) {
             console.error(`Error: ${err}`);
         }
@@ -412,23 +461,49 @@
         const repoIndex = element.id.split('-')[1];
         const repo = repos[repoIndex];
         const selectedVersion = document.getElementById(`version-${repoIndex}`).value;
+
+        document.getElementById('blocker').classList.remove('hidden');
+        document.getElementById('blocker-title').innerText = `Downloading repo ${repo.name} version ${selectedVersion}.\n Reload the page manually in few minutes.`;
+        
         var data = new FormData();
         data.append( "binPath", repo.repoRawPath + `${selectedVersion}/espinstall.ino.bin` );
         data.append( "spiffsPath", repo.repoRawPath + `${selectedVersion}/spiffs.bin` );
         try {
-            const res = await fetch(window.location.href + 'repo/install', {
+            const res = await fetch(window.location.href + 'repo/install/request', {
                 method: 'POST',
                 body:data
             });
         } catch (err) {
             console.error(`Error: ${err}`);
+            document.getElementById('blocker').classList.add('hidden');
         }
     } 
+
+    const installCustomPaths = async (element) => {
+        const binPath = document.getElementById('bin-path-input').value;
+        const spiffPath = document.getElementById('spiff-path-input').value;
+
+        document.getElementById('blocker').classList.remove('hidden');
+        document.getElementById('blocker-title').innerText = `Downloading repo ${binPath}.\n Reload the page manually in few minutes.`;
+        
+        var data = new FormData();
+        data.append( "binPath", binPath);
+        data.append( "spiffsPath", spiffPath);
+        try {
+            const res = await fetch(window.location.href + 'repo/install/request', {
+                method: 'POST',
+                body:data
+            });
+        } catch (err) {
+            console.error(`Error: ${err}`);
+            document.getElementById('blocker').classList.add('hidden');
+        }
+    }
 
     // Events
     window.onload = async () => {
         await fetchRepoList();
-        document.getElementById('page-loader').remove();
+        document.getElementById('page-loader').classList.add('hidden');
     };
 </script>
 <!-- HTML_SCRIPT_END -->

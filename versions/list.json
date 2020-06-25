@@ -1,7 +1,14 @@
 [{
-    "version": 0.1,
+    "version": 0.2,
     "build": 1,
     "current": true,
+    "partitionScheme":"min_spiffs",
+    "description": "Move HTTP calls to main loop",
+    "compatibility": []
+},{
+    "version": 0.1,
+    "build": 1,
+    "current": false,
     "partitionScheme":"min_spiffs",
     "description": "Initial work",
     "compatibility": []

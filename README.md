@@ -9,6 +9,7 @@ It simply provides a webinterface from where you can download and install projec
 - No dependencies
 - Web interface
 - OTA from listed Repo
+- OTA from custom URL
 - Local OTA (from local directory)
 
 <p align="center">
