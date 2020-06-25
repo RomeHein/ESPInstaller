@@ -13,9 +13,8 @@ It simply provides a webinterface from where you can download and install projec
 - Local OTA (from local directory)
 
 <p align="center">
-    <img src="images/espinstaller.png" width="400">
+    <img src="images/demo.gif" width="400">
 </p>
-
 ## Getting started
 
 ### Prerequisites
